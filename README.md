@@ -18,7 +18,7 @@ A web-based demonstration of secure cryptographic file sharing with encryption, 
 - **Security analysis** — threat model, mitigations, and recommended hardening steps.
 - **How to run** — quick commands to run the demo locally.
 
-## Cryptographic Algorithms (Used)
+## Cryptographic Algorithms Used
 
 - **Encryption (Confidentiality & Integrity)**: AES-256 in Galois/Counter Mode (AES-256-GCM).
     - Provides both confidentiality and an authentication tag (AEAD), protecting against tampering and providing detection of altered ciphertext.
@@ -33,15 +33,15 @@ A web-based demonstration of secure cryptographic file sharing with encryption, 
 
 Design note: This demo uses an RSA-based hybrid approach (RSA + AES) for clarity reasons. In production, ECIES or X25519 + AEAD are often more efficient.
 
-## Libraries and Tools — choices and justification
+## Libraries and Tools - choices and justification
 
-- `cryptography` (Python) — chosen for backend crypto primitives.
+- `cryptography` (Python): chosen for backend crypto primitives.
     - Justification: well-maintained, Pythonic API, uses OpenSSL under the hood and exposes secure high-level APIs (AEAD, RSA-PSS, OAEP) while discouraging unsafe low-level operations.
     - Alternative production choices: libsodium (easy, high-level modern primitives like X25519/ChaCha20-Poly1305), or directly using OpenSSL with vetted wrappers if required.
 
-- `Flask` — minimal HTTP API framework for teaching/demo purposes.
+- `Flask`: minimal HTTP API framework for teaching/demo purposes.
 
-- Vanilla HTML+JS frontend — avoids Node/npm dependency to keep the demo runnable in constrained environments.
+- Vanilla HTML+JS frontend: avoids Node/npm dependency to keep the demo runnable in constrained environments.
 
 Why not OpenSSL/Libsodium directly inside this demo? Using `cryptography` gives a safe, cross-platform Python API. For higher performance or modern curve-based systems, libsodium (or `pynacl`) is recommended in production.
 
@@ -91,19 +91,19 @@ Integration notes:
 
 Threats considered :
 
-- Tampering (active modification of ciphertext): mitigated by AES-GCM AEAD — tampering causes decryption/authentication failure.
+- Tampering (active modification of ciphertext): mitigated by AES-GCM AEAD, tampering causes decryption/authentication failure.
 
 - Wrong recipient / confidentiality breach: mitigated by encrypting the AES key with recipient's public key (RSA-OAEP); only the holder of the recipient private key can recover the symmetric key and decrypt content.
 
 - Forged messages (sender impersonation): mitigated by RSA-PSS signatures; verification with the sender's public key detects forgeries.
 
-- Key compromise (private key leakage): demo risk — private keys kept in memory. Production mitigation — use HSM/KMS, rotate keys, maintain revocation.
+- Key compromise (private key leakage): demo risk, private keys kept in memory. Production mitigation, use HSM/KMS, rotate keys, maintain revocation.
 
 - Replay attacks: include timestamps or nonces in metadata when needed. The demo stores packages and expects fresh fetches; for production, include validity windows and signed timestamps.
 
 - Man-in-the-middle (MITM) stealing public keys: mitigate by authenticating public keys via PKI, certificates, or an out-of-band trust bootstrapping. The demo trusts the server-generated keys.
 
-- Side-channel and implementation bugs: use well-tested libraries and avoid custom crypto primitives. We rely on `cryptography` which wraps OpenSSL; keep dependencies updated.
+- Side-channel and implementation bugs: use tested libraries and avoid custom crypto primitives. We rely on `cryptography`, which wraps OpenSSL; keep dependencies updated.
 
 Additional mitigation suggestions for production:
 - Always run over TLS (HTTPS) to protect transport-level secrets and metadata.
@@ -113,8 +113,8 @@ Additional mitigation suggestions for production:
 - Implement key rotation and a robust revocation mechanism with secure notification to recipients.
 
 Limitations of this demo:
-- Private keys are stored in process memory and are ephemeral — not suitable for production.
-- The Flask dev server is not hardened — use a WSGI server (Gunicorn/Uvicorn) behind a TLS-terminating reverse proxy for production.
+- Private keys are stored in process memory and are ephemeral, not suitable for production.
+- The Flask dev server is not hardened,  use a WSGI server (Gunicorn/Uvicorn) behind a TLS-terminating reverse proxy for production.
 - No persistent database for files or users in the demo (everything is in-memory). Use an encrypted DB for persistence in production.
 
 ## How to run 
