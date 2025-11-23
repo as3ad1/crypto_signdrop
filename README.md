@@ -1,17 +1,14 @@
-# 🔐 Signdrop - Secure File Sharing with Cryptography
+#  Signdrop - Secure File Sharing with Cryptography
 
 A web-based demonstration of secure cryptographic file sharing with encryption, digital signatures, and revocation capabilities.
 
-## ✨ Features
+##  Features
 
-✅ **AES-256-GCM Encryption** - Confidentiality with authenticated encryption  
-✅ **RSA-PSS Digital Signatures** - Authentication & Non-repudiation  
-✅ **RSA Key Exchange** - Secure symmetric key distribution  
+**AES-256-GCM Encryption** - Confidentiality with authenticated encryption  
+**RSA-PSS Digital Signatures** - Authentication & Non-repudiation  
+**RSA Key Exchange** - Secure symmetric key distribution  
 # Signdrop — Secure File Sharing (Demo)
 
-This repository is a compact, educational demonstration of end-to-end secure file sharing implemented with a minimal Flask backend and a small static frontend. It focuses on correct use of cryptographic primitives (authenticated encryption and digital signatures), a clear key-management strategy for the demo, and simple revocation/testing scenarios suitable for classroom demonstration.
-
----
 
 **Contents of this README**
 - **Cryptographic algorithms used** — high-level description of encryption, hashing, key-exchange and signature algorithms used.
@@ -34,7 +31,7 @@ This repository is a compact, educational demonstration of end-to-end secure fil
 
 - **Hashing**: SHA-256 is used implicitly by RSA-PSS and for any ID hashing needs (file IDs, short fingerprints).
 
-Design note: This demo uses an RSA-based hybrid approach (RSA + AES) for clarity and pedagogical reasons. In production, ECIES or X25519 + AEAD (e.g., libsodium) are often more modern and efficient.
+Design note: This demo uses an RSA-based hybrid approach (RSA + AES) for clarity reasons. In production, ECIES or X25519 + AEAD are often more efficient.
 
 ## Libraries and Tools — choices and justification
 
@@ -155,13 +152,6 @@ python server.py
 - Add end-to-end tests and automated test harness for the tampering / wrong-recipient scenarios.
 - Add unit tests and CI/CD checks (dependency scanning, SAST).
 
----
 
-If you want, I can now:
-- Add a scripted test endpoint that runs the tampering and wrong-recipient scenarios and returns a report, or
-- Start both servers here so you can interact with the demo, or
-- Generate a short slide or one-page summary tailored for your professor.
-
-Questions or which next step would you like me to do?
 
 
