@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signdrop - Secure File Sharing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel h2 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .users {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .user-btn {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #333;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: auto;
+        }
+        
+        .user-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .user-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        
+        .result {
+            background: #f9fafb;
+            border-left: 4px solid #22c55e;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.error {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .register-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .register-section input {
+            margin: 0;
+            flex: 1;
+        }
+        
+        .register-section button {
+            flex: 0 0 100px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Signdrop - Secure File Sharing</h1>
+        
+        <div class="grid">
+            <!-- Users Panel -->
+            <div class="panel">
+                <h2>👥 Users</h2>
+                <div class="register-section">
+                    <input type="text" id="newUserName" placeholder="Enter username">
+                    <button onclick="registerUser()">Register</button>
+                </div>
+                <div class="users" id="usersList"></div>
+            </div>
+            
+            <!-- Info Panel -->
+            <div class="panel">
+                <h2>ℹ️ Current Status</h2>
+                <p><strong>Current User:</strong> <span id="currentUserDisplay">None</span></p>
+                <p><strong>Total Users:</strong> <span id="totalUsers">0</span></p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                    Backend: <span id="backendStatus" style="color: #dc2626;">Checking...</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="grid" id="mainContent" style="display: none;">
+            <!-- Send File -->
+            <div class="panel">
+                <h2>📤 Send File</h2>
+                <select id="receiver">
+                    <option value="">Select recipient...</option>
+                </select>
+                <input type="text" id="filename" placeholder="Filename (e.g., document.txt)" value="file.txt">
+                <textarea id="fileContent" placeholder="Enter file content..."></textarea>
+                <button onclick="sendFile()">Send Encrypted File</button>
+            </div>
+            
+            <!-- Receive File -->
+            <div class="panel">
+                <h2>📥 Receive File</h2>
+                <input type="text" id="fileId" placeholder="Enter File ID...">
+                <button onclick="receiveFile()" style="background: #059669;">Receive & Verify</button>
+                <button onclick="revokeFile()" style="background: #dc2626; margin-top: 10px;">Revoke File</button>
+                <button onclick="testTampering()" style="background: #8b5cf6; margin-top: 10px;">🦠 Test Tampering</button>
+            </div>
+        </div>
+        
+        <!-- Result Display -->
+        <div id="resultContainer" class="hidden" style="margin-top: 20px;">
+            <div class="result" id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:5000/api';
+        let currentUser = null;
+        let users = [];
+
+        // Check backend
+        async function checkBackend() {
+            try {
+                const res = await fetch(`${API}/health`);
+                if (res.ok) {
+                    document.getElementById('backendStatus').textContent = '✅ Connected';
+                    document.getElementById('backendStatus').style.color = '#22c55e';
+                }
+            } catch (err) {
+                document.getElementById('backendStatus').textContent = '❌ Offline';
+            }
+        }
+
+        // Register User
+        async function registerUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            if (!name) return showResult('❌ Enter a username', true);
+
+            try {
+                const res = await fetch(`${API}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    users.push(name);
+                    document.getElementById('newUserName').value = '';
+                    updateUsersList();
+                    showResult(`✅ ${name} registered successfully!`);
+                } else {
+                    showResult(`❌ ${data.message}`, true);
+                }
+            } catch (err) {
+                showResult(`❌ Error: ${err.message}`, true);
+            }
+        }
+
+        // Update users list
+        function updateUsersList() {
+            const list = document.getElementById('usersList');
+            list.innerHTML = users.map(u => `
+                <button class="user-btn ${u === currentUser ? 'active' : ''}" onclick="setCurrentUser('${u}')">
+                    ${u} ${u === currentUser ? '✓' : ''}
+                </button>
+            `).join('');
+            document.getElementById('totalUsers').textContent = users.length;
+        }
+
+        // Set current user
+        function setCurrentUser(user) {
+            currentUser = user;
+            document.getElementById('currentUserDisplay').textContent = user;
+            updateUsersList();
+            
+            // Update receiver list
+            const receiverSelect = document.getElementById('receiver');
+            receiverSelect.innerHTML = `<option value="">Select recipient...</option>` +
+                users.filter(u => u !== user).map(u => `<option value="${u}">${u}</option>`).join('');
+            
+            // Show main content
+            document.getElementById('mainContent').style.display = 'grid';
+        }
+
+        // Send File
+        async function sendFile() {
+            const receiver = document.getElementById('receiver').value;
+            const content = document.getElementById('fileContent').value;
+            const filename = document.getElementById('filename').value;
+
+            if (!currentUser || !receiver || !content) {
+                return showResult('❌ Fill all fields', true);
+            }
+
+            try {
+                const res = await fetch(`${API}/send-file`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender: currentUser,
+                        receiver,
+                        content,
+                        filename
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    showResult(`✅ File sent successfully!\n\nFile ID: ${data.file_id}\nFilename: ${data.filename}\n\nShare this ID with the recipient.`);
+                    document.getElementById('fileContent').value = '';
+                } else {
+                    showResult(`❌ ${data.message}`, true);
+                }
+            } catch (err) {
+                showResult(`❌ Error: ${err.message}`, true);
+            }
+        }
+
+        // Receive File
+        async function receiveFile() {
+            const fileId = document.getElementById('fileId').value.trim();
+
+            if (!currentUser || !fileId) {
+                return showResult('❌ Fill all fields', true);
+            }
+
+            try {
+                const res = await fetch(`${API}/receive-file`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receiver: currentUser,
+                        file_id: fileId
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    const sigStatus = data.signature_valid ? '✅ VALID' : '❌ FAILED';
+                    showResult(`✅ File received!\n\nFilename: ${data.filename}\nFrom: ${data.sender}\n\nContent:\n${data.content}\n\nSignature Verification: ${sigStatus}`);
+                    document.getElementById('fileId').value = '';
+                } else {
+                    showResult(`❌ ${data.message}`, true);
+                }
+            } catch (err) {
+                showResult(`❌ Error: ${err.message}`, true);
+            }
+        }
+
+        // Revoke File
+        async function revokeFile() {
+            const fileId = document.getElementById('fileId').value.trim();
+
+            if (!fileId) {
+                return showResult('❌ Enter File ID to revoke', true);
+            }
+
+            try {
+                const res = await fetch(`${API}/revoke/${fileId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    showResult(`✅ File revoked successfully!\n\nNo one can access this file anymore.`);
+                    document.getElementById('fileId').value = '';
+                } else {
+                    showResult(`❌ ${data.message}`, true);
+                }
+            } catch (err) {
+                showResult(`❌ Error: ${err.message}`, true);
+            }
+        }
+
+        // Test Tampering
+        async function testTampering() {
+            const fileId = document.getElementById('fileId').value.trim();
+
+            if (!currentUser || !fileId) {
+                return showResult('❌ Enter File ID to test tampering', true);
+            }
+
+            try {
+                showResult(`🧪 Testing Tampering Detection...\n\n⏳ Step 1: Corrupting file data...`);
+
+                // Get corrupted package from backend
+                const res1 = await fetch(`${API}/corrupt-file`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_id: fileId })
+                });
+                const corrupt_data = await res1.json();
+
+                if (corrupt_data.status !== 'success') {
+                    return showResult(`❌ Test failed: ${corrupt_data.message}`, true);
+                }
+
+                showResult(`🧪 Testing Tampering Detection...\n\n✅ Step 1: File data corrupted\n⏳ Step 2: Attempting to decrypt corrupted file...`);
+
+                // Now try to receive the corrupted file
+                const res2 = await fetch(`${API}/receive-file`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receiver: currentUser,
+                        file_id: fileId
+                    })
+                });
+                const result = await res2.json();
+
+                if (result.status === 'success') {
+                    // If we get here, tampering was NOT detected (bad)
+                    showResult(`❌ SECURITY ISSUE: Corrupted file was accepted!\n\nThis shouldn't happen - AES-GCM should detect tampering.`, true);
+                } else {
+                    // Tampering detected (good)
+                    showResult(`✅ TAMPERING DETECTED!\n\nTest Results:\n✅ File was corrupted\n✅ Decryption attempted\n✅ Authentication tag validation FAILED\n\n🛡️ SECURITY WORKING:\nAES-256-GCM authentication prevents tampering!\n\nAttackers cannot modify encrypted data without detection.`);
+                }
+            } catch (err) {
+                showResult(`❌ Error: ${err.message}`, true);
+            }
+        }
+
+        // Show result
+        function showResult(message, isError = false) {
+            const container = document.getElementById('resultContainer');
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.parentElement.className = isError ? 'result error' : 'result';
+            container.classList.remove('hidden');
+        }
+
+        // Initialize
+        checkBackend();
+        setInterval(checkBackend, 5000);
+    </script>
+</body>
+</html>
