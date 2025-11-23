@@ -89,7 +89,7 @@ Integration notes:
 
 ## Security Analysis — threat model & mitigations
 
-Threats considered (non-exhaustive):
+Threats considered :
 
 - Tampering (active modification of ciphertext): mitigated by AES-GCM AEAD — tampering causes decryption/authentication failure.
 
@@ -112,12 +112,12 @@ Additional mitigation suggestions for production:
 - Add integrity checks and audits for key provisioning actions.
 - Implement key rotation and a robust revocation mechanism with secure notification to recipients.
 
-Limitations of this demo (explicit):
+Limitations of this demo:
 - Private keys are stored in process memory and are ephemeral — not suitable for production.
 - The Flask dev server is not hardened — use a WSGI server (Gunicorn/Uvicorn) behind a TLS-terminating reverse proxy for production.
 - No persistent database for files or users in the demo (everything is in-memory). Use an encrypted DB for persistence in production.
 
-## How to run (quick)
+## How to run 
 
 1. Create the Python venv and install dependencies:
 
